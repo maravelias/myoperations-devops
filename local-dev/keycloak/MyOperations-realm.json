@@ -1,0 +1,74 @@
+{
+  "realm": "MyOperations",
+  "enabled": true,
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "resetPasswordAllowed": true,
+  "roles": {
+    "realm": [
+      { "name": "SR", "description": "Sales Representative" },
+      { "name": "SM", "description": "Sales Manager" },
+      { "name": "PM", "description": "Project Manager" },
+      { "name": "TM", "description": "Team Member" },
+      { "name": "ACC", "description": "Accountant" },
+      { "name": "SA", "description": "Support Agent" },
+      { "name": "SUPM", "description": "Support Manager" },
+      { "name": "SYSADM", "description": "System Administrator" },
+      { "name": "EXEC", "description": "Executive Stakeholder" },
+      { "name": "CLIENT", "description": "Client / Customer" }
+    ]
+  },
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "System",
+      "lastName": "Admin",
+      "email": "admin@local.com",
+      "credentials": [ { "type": "password", "value": "admin", "temporary": false } ],
+      "realmRoles": ["SYSADM"]
+    },
+    {
+      "username": "sr1",
+      "enabled": true,
+      "firstName": "Sales",
+      "lastName": "Rep",
+      "email": "sr1@local.com",
+      "credentials": [ { "type": "password", "value": "password", "temporary": false } ],
+      "realmRoles": ["SR"]
+    },
+    {
+      "username": "pm1",
+      "enabled": true,
+      "firstName": "Project",
+      "lastName": "Manager",
+      "email": "pm1@local.com",
+      "credentials": [ { "type": "password", "value": "password", "temporary": false } ],
+      "realmRoles": ["PM"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "myoperations-frontend",
+      "name": "MyOperations Frontend",
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:8080/*", "http://127.0.0.1:8080/*"],
+      "webOrigins": ["+"]
+    },
+    {
+      "clientId": "myoperations-backend",
+      "name": "MyOperations Backend",
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["http://localhost:8080/*", "http://127.0.0.1:8080/*"],
+      "secret": "changeme-in-prod"
+    }
+  ]
+}

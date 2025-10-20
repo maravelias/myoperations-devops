@@ -1,0 +1,98 @@
+---
+- name: Provision and deploy MyOperations local stack
+  hosts: all
+  become: true
+  vars:
+    repo_src: "{{ playbook_dir }}/../../"
+    repo_dest: "/opt/MyOperations-Docs"
+  tasks:
+    - name: Install prerequisites
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - rsync
+        state: present
+        update_cache: yes
+
+    - name: Add Docker's official GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker apt repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+        state: present
+
+    - name: Install Docker Engine and Compose plugin
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Enable and start Docker service
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Ensure vm.max_map_count for SonarQube
+      ansible.posix.sysctl:
+        name: vm.max_map_count
+        value: '262144'
+        state: present
+        reload: true
+
+    - name: Add current SSH user to docker group
+      ansible.builtin.user:
+        name: "{{ ansible_env.SUDO_USER | default(ansible_user) }}"
+        groups: docker
+        append: true
+
+    - name: Sync repository to remote
+      ansible.posix.synchronize:
+        src: "{{ repo_src }}"
+        dest: "{{ repo_dest }}"
+        delete: no
+        rsync_opts:
+          - "--exclude=site"
+          - "--exclude=.git"
+
+    - name: Bring up stack with docker compose
+      ansible.builtin.shell: docker compose -f devops/local/docker-compose.yml up -d
+      args:
+        chdir: "{{ repo_dest }}"
+
+    - name: Install systemd unit for auto-start on boot
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/myoperations-local-stack.service
+        content: |
+          [Unit]
+          Description=MyOperations Local Stack (Docker Compose)
+          Requires=docker.service
+          After=docker.service
+
+          [Service]
+          Type=oneshot
+          RemainAfterExit=yes
+          WorkingDirectory={{ repo_dest }}
+          ExecStart=/usr/bin/docker compose -f devops/local/docker-compose.yml up -d
+          ExecStop=/usr/bin/docker compose -f devops/local/docker-compose.yml down
+          TimeoutStartSec=0
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Enable systemd unit
+      ansible.builtin.systemd:
+        name: myoperations-local-stack.service
+        enabled: true
+        daemon_reload: true

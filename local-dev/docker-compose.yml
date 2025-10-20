@@ -1,0 +1,179 @@
+name: myoperations-local-stack
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: myoperations-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: operations
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: P@ssw0rd
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d operations"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.10
+
+
+  pgadmin:
+    image: dpage/pgadmin4:9.8.0
+    container_name: myoperations-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.19
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.3
+    container_name: myoperations-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+       KEYCLOAK_ADMIN: admin
+       KEYCLOAK_ADMIN_PASSWORD: admin
+
+    volumes:
+       - ./keycloak/MyOperations-realm.json:/opt/keycloak/data/import/MyOperations-realm.json:ro
+    ports:
+       - "5080:8080"
+    healthcheck:
+       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+       interval: 10s
+       timeout: 5s
+       retries: 10
+    networks:
+      myoperations-network:
+         ipv4_address: 172.30.0.11
+
+  sonar-db:
+    image: postgres:17
+    container_name: myoperations-sonar-db
+    environment:
+      POSTGRES_DB: sonar
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+    volumes:
+      - sonar-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sonar -d sonar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.12
+
+  sonarqube:
+    image: sonarqube:25.10.0.114319-community
+    container_name: myoperations-sonarqube
+    depends_on:
+      sonar-db:
+        condition: service_healthy
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonar-db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonar-data:/opt/sonarqube/data
+      - sonar-extensions:/opt/sonarqube/extensions
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.13
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: myoperations-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.14
+
+  loki:
+    image: grafana/loki:2.9.8
+    container_name: myoperations-loki
+    command: ["-config.file=/etc/loki/config.yml"]
+    volumes:
+      - ./loki/config.yml:/etc/loki/config.yml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.15
+
+
+
+  grafana:
+    image: grafana/grafana-oss:12.1.1
+    container_name: myoperations-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.17
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: myoperations-mailhog
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.18
+
+
+volumes:
+  postgres-data:
+  sonar-db-data:
+  sonar-data:
+  sonar-extensions:
+  prometheus-data:
+  grafana-storage:
+  loki-data:
+  pgadmin-data:
+
+
+networks:
+  myoperations-network:
+    driver: bridge
+    name: myoperations-network
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1

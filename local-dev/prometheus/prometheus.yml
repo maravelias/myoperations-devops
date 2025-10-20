@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: operations-app
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          # If you run the app on host at port 8081, this works on Mac/Windows Docker Desktop
+          #- host.docker.internal:8080
+          # On Linux, replace the above with the Docker bridge IP (commonly 172.17.0.1:8081)
+           - 172.17.0.1:8080
