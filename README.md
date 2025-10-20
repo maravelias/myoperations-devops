@@ -19,7 +19,7 @@ Security note: Default credentials and static IPs are used for local development
 - Postgres 17 with pgvector (DB: operations)
 - pgAdmin 4 (pre-provisioned connection to Postgres)
 - Keycloak 26 (realm import: MyOperations)
-- SonarQube (LTS) with dedicated Postgres DB
+- SonarQube (Community) with dedicated Postgres DB
 - Prometheus (metrics)
 - Loki (log aggregation)
 - Grafana OSS (dashboards; pre-provisioned datasources for Prometheus & Loki)
@@ -32,29 +32,29 @@ From repository root:
 
 - Start all services (detached):
 ```bash
-docker compose -f devops/local/docker-compose.yml up -d
+docker compose -f local-dev/docker-compose.yml up -d
 ```
 
 - Stop and remove containers (keep volumes):
 ```bash
-docker compose -f devops/local/docker-compose.yml down
+docker compose -f local-dev/docker-compose.yml down
 ```
 
 - Tail logs for all services:
 ```bash
-docker compose -f devops/local/docker-compose.yml logs -f
+docker compose -f local-dev/docker-compose.yml logs -f
 ```
 
 - Tail logs for one service (e.g., keycloak):
 ```bash
-docker compose -f devops/local/docker-compose.yml logs -f keycloak
+docker compose -f local-dev/docker-compose.yml logs -f keycloak
 ```
 
 - Recreate from scratch (CAUTION – removes named volumes):
 ```bash
-docker compose -f devops/local/docker-compose.yml down
+docker compose -f local-dev/docker-compose.yml down
 docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
-docker compose -f devops/local/docker-compose.yml up -d
+docker compose -f local-dev/docker-compose.yml up -d
 ```
 
 Note: `docker compose down -v` does not remove named volumes; remove explicitly as above.
@@ -118,7 +118,7 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
   - UI: `http://localhost:8025`
 
 ## Prometheus and Your Application
-The Prometheus configuration at `devops/local/prometheus/prometheus.yml` includes a job to scrape a local application exposing Micrometer metrics at `/actuator/prometheus`.
+The Prometheus configuration at `local-dev/prometheus/prometheus.yml` includes a job to scrape a local application exposing Micrometer metrics at `/actuator/prometheus`.
 
 - Linux hosts: The config targets `172.17.0.1:8080` (Docker bridge IP). Ensure your app runs on the host at port `8080` and exposes `/actuator/prometheus`.
 - macOS/Windows (Docker Desktop): Use `host.docker.internal:8080` instead. In `prometheus.yml`, uncomment the `host.docker.internal` line and comment/remove the `172.17.0.1` target.
@@ -142,7 +142,7 @@ Quick checks:
 Keycloak and SonarQube may take 1–3 minutes on first start (initialization and realm import).
 
 ## Troubleshooting
-- Port conflicts: If a port is already in use, stop the conflicting service or change the published port in `devops/local/docker-compose.yml`.
+- Port conflicts: If a port is already in use, stop the conflicting service or change the published port in `local-dev/docker-compose.yml`.
 - Network/subnet conflicts: If `172.30.0.0/24` overlaps with your environment, change the `myoperations-network` subnet and the fixed container IPs consistently across services.
 - SonarQube on Linux: You may need to increase `vm.max_map_count` for the embedded search engine:
   ```bash
@@ -160,7 +160,7 @@ Named Docker volumes keep data across restarts:
 Remove named volumes only if you want to reset state (see “Recreate from scratch”).
 
 Compose project name
-- This stack sets the Compose project name to `myoperations-local-stack` (see `name:` in `devops/local/docker-compose.yml`).
+- This stack sets the Compose project name to `myoperations-local-stack` (see `name:` in `local-dev/docker-compose.yml`).
 - Docker Compose prefixes created resource names (volumes, networks) with the project name.
 - That’s why volume names in cleanup examples start with `myoperations-local-stack_`.
 
@@ -169,7 +169,7 @@ Compose project name
 - pgAdmin 4 9.8.0 (myoperations-pgadmin) – http://localhost:5050
 - Keycloak 26.3.3 (myoperations-keycloak) – http://localhost:5080
 - Sonar DB (Postgres 17) (myoperations-sonar-db) – internal only
-- SonarQube LTS (myoperations-sonarqube) – http://localhost:9000
+- SonarQube Community (myoperations-sonarqube) – http://localhost:9000
 - Prometheus v2.54.1 (myoperations-prometheus) – http://localhost:9090
 - Loki 2.9.8 (myoperations-loki) – http://localhost:3100
 - Grafana OSS 12.1.1 (myoperations-grafana) – http://localhost:3000
@@ -181,32 +181,32 @@ If you have an Ubuntu VM with SSH access and want to deploy this stack there, yo
 - Script (simple): copy the repo to the VM and run the deploy script as root
   1) Copy repo (example):
      ```bash
-     scp -r . <user>@<vm>:/opt/MyOperations-Docs
+     scp -r . <user>@<vm>:/opt/myoperations-devops
      ```
   2) SSH into the VM and run:
      ```bash
-     sudo bash /opt/MyOperations-Docs/devops/local/scripts/deploy-to-vm.sh \
-       --with-systemd --repo-dir /opt/MyOperations-Docs --user <user>
+     sudo bash /opt/myoperations-devops/local-dev/scripts/deploy-to-vm.sh \
+       --with-systemd --repo-dir /opt/myoperations-devops --user <user>
      ```
   The script installs Docker Engine + Compose plugin, applies the SonarQube sysctl, brings up the stack, and optionally installs a systemd unit to auto-start on boot.
 
 - Ansible (idempotent): from your machine, with Ansible installed
-  1) Edit inventory: `devops/local/ansible/inventory.ini`
+  1) Edit inventory: `local-dev/ansible/inventory.ini`
   2) Run playbook:
      ```bash
-     ansible-playbook -i devops/local/ansible/inventory.ini devops/local/ansible/site.yml
+     ansible-playbook -i local-dev/ansible/inventory.ini local-dev/ansible/site.yml
      ```
-  The playbook installs Docker and dependencies, syncs the repo to `/opt/MyOperations-Docs`, starts the stack, and creates a systemd unit.
+  The playbook installs Docker and dependencies, syncs the repo to `/opt/myoperations-devops`, starts the stack, and creates a systemd unit.
 
 Notes
-- Network subnet: The compose file uses a fixed subnet `172.30.0.0/24`. If this conflicts on your VM, adjust the subnet and static IPs in `devops/local/docker-compose.yml` under the `myoperations-network` section.
+- Network subnet: The compose file uses a fixed subnet `172.30.0.0/24`. If this conflicts on your VM, adjust the subnet and static IPs in `local-dev/docker-compose.yml` under the `myoperations-network` section.
 - Firewall: Ensure the VM allows inbound ports you need (e.g., 3000, 5080, 9000, 8025, 9090, 5432) or restrict to your IP.
 - Non-root docker use: After first run, the user added to the docker group must re-login for permissions to take effect.
 
 ## Cleanup
 To remove everything created by this stack:
 ```bash
-docker compose -f devops/local/docker-compose.yml down
+docker compose -f local-dev/docker-compose.yml down
 docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
 ```
 
@@ -221,11 +221,11 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 | 1.2    | 2025-10-20 | Giorgos Maravelias | Verified SonarQube and MailHog in compose; aligned versions; added usage notes |
 | 1.3    | 2025-10-20 | Giorgos Maravelias | Added VM deployment script and Ansible playbook; README VM section      |
 | 1.5    | 2025-10-20 | Giorgos Maravelias | Cleaned up formatting; refocused on local dev; added pgvector note      |
+| 1.6    | 2025-10-20 | Giorgos Maravelias | Normalized paths to local-dev; aligned VM/Ansible; updated SonarQube wording; removed Makefile section |
 
 ## Folder Structure
 ```
-devops/local/
-├── README.md                       # Documentation for the local Docker setup
+local-dev/
 ├── docker-compose.yml              # Orchestrates all local services
 ├── grafana/
 │   └── provisioning/
@@ -237,8 +237,16 @@ devops/local/
 │   └── config.yml                  # Loki configuration for single-process mode
 ├── pgadmin/
 │   └── servers.json                # Preconfigured server connection to Postgres
+├── postgres/
+│   └── init/
+│       └── 01_pgvector.sql         # Initializes pgvector extension
 ├── prometheus/
 │   └── prometheus.yml              # Prometheus scrape configuration (self + local app)
+├── ansible/
+│   ├── inventory.ini               # Ansible inventory for remote VM
+│   └── site.yml                    # Ansible playbook to deploy local stack
+├── scripts/
+│   └── deploy-to-vm.sh             # Bash script to install Docker and deploy stack on a VM
 └── logs/                           # Optional directory for local logs/mounts
 ```
 
@@ -274,23 +282,23 @@ Frequent docker and docker compose commands for this environment (run from repos
 
 - Start stack (detached):
   ```bash
-  docker compose -f devops/local/docker-compose.yml up -d
+  docker compose -f local-dev/docker-compose.yml up -d
   ```
 - Stop and remove containers (keep volumes):
   ```bash
-  docker compose -f devops/local/docker-compose.yml down
+  docker compose -f local-dev/docker-compose.yml down
   ```
 - Recreate from scratch (removes named volumes; destructive):
   ```bash
-  docker compose -f devops/local/docker-compose.yml down
+  docker compose -f local-dev/docker-compose.yml down
   docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
-  docker compose -f devops/local/docker-compose.yml up -d
+  docker compose -f local-dev/docker-compose.yml up -d
   ```
 - Status and logs:
   ```bash
-  docker compose -f devops/local/docker-compose.yml ps
-  docker compose -f devops/local/docker-compose.yml logs -f
-  docker compose -f devops/local/docker-compose.yml logs -f <service>
+  docker compose -f local-dev/docker-compose.yml ps
+  docker compose -f local-dev/docker-compose.yml logs -f
+  docker compose -f local-dev/docker-compose.yml logs -f <service>
   ```
 - Exec into a container shell (example Postgres):
   ```bash
@@ -310,13 +318,4 @@ Frequent docker and docker compose commands for this environment (run from repos
   docker system prune -f
   ```
 
-## Optional Make Targets
-For convenience, a `Makefile` is provided in the repo root that wraps common commands:
-
-- Start stack: `make up`
-- Stop stack: `make down`
-- Tail logs (all): `make logs`
-- Tail logs (one): `make logs-keycloak`
-- List services: `make ps`
-- Validate compose: `make config`
-- Reset (remove project volumes): `make reset`
+ 

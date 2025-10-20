@@ -6,9 +6,9 @@ set -euo pipefail
 # Optionally installs a systemd unit to auto-start the stack on boot.
 #
 # Usage examples (run on the VM over SSH):
-#   sudo bash devops/local/scripts/deploy-to-vm.sh
-#   sudo bash devops/local/scripts/deploy-to-vm.sh --with-systemd
-#   sudo bash devops/local/scripts/deploy-to-vm.sh --repo-dir /opt/MyOperations-Docs --user ubuntu --with-systemd
+#   sudo bash local-dev/scripts/deploy-to-vm.sh
+#   sudo bash local-dev/scripts/deploy-to-vm.sh --with-systemd
+#   sudo bash local-dev/scripts/deploy-to-vm.sh --repo-dir /opt/myoperations-devops --user ubuntu --with-systemd
 
 WITH_SYSTEMD=0
 REPO_DIR=""
@@ -16,10 +16,10 @@ TARGET_USER="${SUDO_USER:-${USER:-root}}"
 
 usage() {
   cat <<EOF
-Usage: sudo bash devops/local/scripts/deploy-to-vm.sh [options]
+Usage: sudo bash local-dev/scripts/deploy-to-vm.sh [options]
 
 Options:
-  --repo-dir PATH     Path to repo root containing devops/local/docker-compose.yml
+  --repo-dir PATH     Path to repo root containing local-dev/docker-compose.yml
   --user NAME         User to add to docker group (default: ${TARGET_USER})
   --with-systemd      Install a systemd unit to auto-start the stack on boot
   -h, --help          Show this help
@@ -51,13 +51,13 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
-# Resolve repo dir if not provided: assume script lives in repo/devops/local/scripts
+# Resolve repo dir if not provided: assume script lives in repo/local-dev/scripts
 if [[ -z "${REPO_DIR}" ]]; then
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   REPO_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 fi
 
-COMPOSE_FILE="${REPO_DIR}/devops/local/docker-compose.yml"
+COMPOSE_FILE="${REPO_DIR}/local-dev/docker-compose.yml"
 if [[ ! -f "${COMPOSE_FILE}" ]]; then
   echo "Cannot find docker-compose.yml at: ${COMPOSE_FILE}" >&2
   exit 1
@@ -114,15 +114,15 @@ add_user_to_docker_group() {
 
 bring_up_stack() {
   echo "==> Bringing up stack via docker compose"
-  (cd "${REPO_DIR}" && docker compose -f devops/local/docker-compose.yml up -d)
+  (cd "${REPO_DIR}" && docker compose -f local-dev/docker-compose.yml up -d)
 }
 
 install_systemd_unit() {
-  echo "==> Installing systemd unit: pm-local-stack.service"
-  SERVICE_FILE=/etc/systemd/system/pm-local-stack.service
+  echo "==> Installing systemd unit: myoperations-local-stack.service"
+  SERVICE_FILE=/etc/systemd/system/myoperations-local-stack.service
   cat > "${SERVICE_FILE}" <<UNIT
 [Unit]
-Description=PM Local Stack (Docker Compose)
+Description=MyOperations Local Stack (Docker Compose)
 Requires=docker.service
 After=docker.service
 
@@ -130,15 +130,15 @@ After=docker.service
 Type=oneshot
 RemainAfterExit=yes
 WorkingDirectory=${REPO_DIR}
-ExecStart=/usr/bin/docker compose -f devops/local/docker-compose.yml up -d
-ExecStop=/usr/bin/docker compose -f devops/local/docker-compose.yml down
+ExecStart=/usr/bin/docker compose -f local-dev/docker-compose.yml up -d
+ExecStop=/usr/bin/docker compose -f local-dev/docker-compose.yml down
 TimeoutStartSec=0
 
 [Install]
 WantedBy=multi-user.target
 UNIT
   systemctl daemon-reload
-  systemctl enable --now pm-local-stack.service
+  systemctl enable --now myoperations-local-stack.service
 }
 
 install_docker
@@ -160,4 +160,3 @@ echo "  - PGadmin: http://$(hostname -I | awk '{print $1}'):5050"
 echo "  - Postgres: $(hostname -I | awk '{print $1}'):5432"
 echo
 echo "Note: If ${TARGET_USER} was just added to the docker group, re-login is required for non-root docker usage."
-

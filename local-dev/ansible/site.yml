@@ -4,7 +4,7 @@
   become: true
   vars:
     repo_src: "{{ playbook_dir }}/../../"
-    repo_dest: "/opt/MyOperations-Docs"
+    repo_dest: "/opt/myoperations-devops"
   tasks:
     - name: Install prerequisites
       apt:
@@ -67,7 +67,7 @@
           - "--exclude=.git"
 
     - name: Bring up stack with docker compose
-      ansible.builtin.shell: docker compose -f devops/local/docker-compose.yml up -d
+      ansible.builtin.shell: docker compose -f local-dev/docker-compose.yml up -d
       args:
         chdir: "{{ repo_dest }}"
 
@@ -84,8 +84,8 @@
           Type=oneshot
           RemainAfterExit=yes
           WorkingDirectory={{ repo_dest }}
-          ExecStart=/usr/bin/docker compose -f devops/local/docker-compose.yml up -d
-          ExecStop=/usr/bin/docker compose -f devops/local/docker-compose.yml down
+          ExecStart=/usr/bin/docker compose -f local-dev/docker-compose.yml up -d
+          ExecStop=/usr/bin/docker compose -f local-dev/docker-compose.yml down
           TimeoutStartSec=0
 
           [Install]
