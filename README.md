@@ -107,6 +107,7 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
 
 - Loki
   - API: `http://localhost:3100`
+  - Auth: disabled (`auth_enabled: false`) for single-tenant local dev; no X-Scope-OrgID header required
 
 - Grafana
   - URL: `http://localhost:3000`
@@ -155,6 +156,10 @@ Keycloak and SonarQube may take 1–3 minutes on first start (initialization and
 - If port 80 is in use (Nginx), change the mapping to `8080:80` and access via `http://localhost:8080/`.
 - Network/subnet conflicts: If `172.30.0.0/24` overlaps with your environment, change the `myoperations-network` subnet and the fixed container IPs consistently across services.
   If you change the subnet or IPs, also update `local-dev/grafana/provisioning/datasources/datasource.yml` (Loki datasource URL) and `local-dev/loki/config.yml` (Loki instance_addr) to match.
+ - Grafana → Loki 401 ("no org id"): Loki runs single-tenant for local dev. Ensure `auth_enabled: false` in `local-dev/loki/config.yml` and restart Loki/Grafana:
+   ```bash
+   docker compose -f local-dev/docker-compose.yml up -d loki grafana
+   ```
 - SonarQube on Linux: You may need to increase `vm.max_map_count` for the embedded search engine:
   ```bash
   sudo sysctl -w vm.max_map_count=262144
@@ -327,6 +332,7 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.6 | 2025-10-20 | Giorgos Maravelias | Normalized paths to local-dev; aligned VM/Ansible; updated SonarQube wording; removed Makefile section |
 |     1.7 | 2025-10-22 | Giorgos Maravelias | Consolidated updates: aligned docs with config (Prometheus job `myoperations-app`, extra targets 172.30.0.1/192.168.56.1, Loki/Grafana static IP note); added “Updating Configuration” section with systemd workflow; expanded Cleanup (service removal, network); moved cleanup script to `local-dev/scripts/cleanup.sh` |
 |     1.8 | 2025-10-22 | Giorgos Maravelias | Added Nginx welcome page service (port 80), updated ports/endpoints, folder structure, and troubleshooting notes |
+|     1.9 | 2025-10-22 | Giorgos Maravelias | Set Loki to single-tenant (`auth_enabled: false`) to fix Grafana 401; updated troubleshooting |
 
 ## Folder Structure
 ```

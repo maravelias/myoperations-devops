@@ -2,6 +2,8 @@ server:
   http_listen_port: 3100
   grpc_listen_port: 9096
 
+auth_enabled: false  # Local dev: single-tenant mode; avoids X-Scope-OrgID header
+
 common:
   instance_addr: 172.30.0.15
   path_prefix: /loki
