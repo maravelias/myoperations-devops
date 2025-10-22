@@ -7,7 +7,7 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
-  - job_name: operations-app
+  - job_name: myoperations-app
     metrics_path: /actuator/prometheus
     static_configs:
       - targets:
@@ -15,3 +15,5 @@ scrape_configs:
           #- host.docker.internal:8080
           # On Linux, use the Docker bridge IP (commonly 172.17.0.1:8080):
            - 172.17.0.1:8080
+           - 172.30.0.1:8080
+           - 192.168.56.1:8080
