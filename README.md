@@ -110,25 +110,28 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
 - Grafana
   - URL: `http://localhost:3000`
   - Login: `admin` / `admin`
-  - Datasources: Prometheus and Loki are pre-provisioned via `grafana/provisioning`
+  - Datasources: Prometheus and Loki are pre-provisioned via `grafana/provisioning`.
+    Note: the Loki datasource points to the fixed container IP `172.30.0.15:3100`
+    to match the static network; update if you change the subnet or Loki IP.
 
 - MailHog
   - SMTP (from host): `localhost:1025`
-  - SMTP (from containers): `mailhog:1025` (service DNS)
+  - SMTP (from containers): `mailhog:1025` (servexitice DNS)
   - UI: `http://localhost:8025`
 
 ## Prometheus and Your Application
-The Prometheus configuration at `local-dev/prometheus/prometheus.yml` includes a job to scrape a local application exposing Micrometer metrics at `/actuator/prometheus`.
+The Prometheus configuration at `local-dev/prometheus/prometheus.yml` includes a job (`myoperations-app`) to scrape a local application exposing Micrometer metrics at `/actuator/prometheus` on port `8080`.
 
-- Linux hosts: The config targets `172.17.0.1:8080` (Docker bridge IP). Ensure your app runs on the host at port `8080` and exposes `/actuator/prometheus`.
-- macOS/Windows (Docker Desktop): Use `host.docker.internal:8080` instead. In `prometheus.yml`, uncomment the `host.docker.internal` line and comment/remove the `172.17.0.1` target.
+- Linux hosts: The config includes `172.17.0.1:8080` (default Docker bridge) and `172.30.0.1:8080` (the custom bridge gateway used by `myoperations-network`). Ensure your app runs on the host at port `8080` and exposes `/actuator/prometheus`.
+- macOS/Windows (Docker Desktop): Use `host.docker.internal:8080` (the line is present but commented). Uncomment it if needed and remove/comment others to avoid duplicates.
+- Other setups: `192.168.56.1:8080` is included for common host‑only adapters (e.g., VirtualBox). Comment out any targets that don’t apply to your environment.
 
 Quick checks:
 - Verify app metrics locally:
   ```bash
   curl -f http://localhost:8080/actuator/prometheus | head
   ```
-- Verify Prometheus can reach the app: open `http://localhost:9090`, go to Status → Targets, check the `operations-app` job.
+- Verify Prometheus can reach the app: open `http://localhost:9090`, go to Status → Targets, check the `myoperations-app` job.
 
 ## Health Checks and Readiness
 - Check container health:
@@ -144,6 +147,7 @@ Keycloak and SonarQube may take 1–3 minutes on first start (initialization and
 ## Troubleshooting
 - Port conflicts: If a port is already in use, stop the conflicting service or change the published port in `local-dev/docker-compose.yml`.
 - Network/subnet conflicts: If `172.30.0.0/24` overlaps with your environment, change the `myoperations-network` subnet and the fixed container IPs consistently across services.
+  If you change the subnet or IPs, also update `local-dev/grafana/provisioning/datasources/datasource.yml` (Loki datasource URL) and `local-dev/loki/config.yml` (Loki instance_addr) to match.
 - SonarQube on Linux: You may need to increase `vm.max_map_count` for the embedded search engine:
   ```bash
   sudo sysctl -w vm.max_map_count=262144
@@ -222,6 +226,7 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 | 1.3    | 2025-10-20 | Giorgos Maravelias | Added VM deployment script and Ansible playbook; README VM section      |
 | 1.5    | 2025-10-20 | Giorgos Maravelias | Cleaned up formatting; refocused on local dev; added pgvector note      |
 | 1.6    | 2025-10-20 | Giorgos Maravelias | Normalized paths to local-dev; aligned VM/Ansible; updated SonarQube wording; removed Makefile section |
+| 1.7    | 2025-10-22 | Giorgos Maravelias | Aligned docs with config: Prometheus job renamed to `myoperations-app`, added extra default targets (172.30.0.1, 192.168.56.1), and documented Loki/Grafana static IP mapping |
 
 ## Folder Structure
 ```
