@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MyOperations Local Stack</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background: #0f172a; color: #e5e7eb; }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 56px 24px; }
+      h1 { font-size: 28px; margin: 0 0 8px; }
+      p  { margin: 0 0 12px; color: #cbd5e1; }
+      a { color: #a3e635; text-decoration: none; }
+      .card { background: #111827; border: 1px solid #374151; border-radius: 10px; padding: 16px 18px; margin-top: 16px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 12px; margin-top: 12px; }
+      .small { color: #9ca3af; font-size: 13px; }
+      code { background: #0b1020; border: 1px solid #1f2937; border-radius: 6px; padding: 2px 6px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>MyOperations Local Stack</h1>
+      <p>Welcome. This Nginx page is served from the local stack.</p>
+
+      <div class="card">
+        <strong>Quick Links</strong>
+        <div class="grid">
+          <div><a href="http://192.168.56.105:3000" target="_blank" rel="noopener">Grafana</a></div>
+          <div><a href="http://192.168.56.105:9090" target="_blank" rel="noopener">Prometheus</a></div>
+          <div><a href="http://192.168.56.105:9000" target="_blank" rel="noopener">SonarQube</a></div>
+          <div><a href="http://192.168.56.105:5080" target="_blank" rel="noopener">Keycloak</a></div>
+          <div><a href="http://192.168.56.105:8025" target="_blank" rel="noopener">MailHog</a></div>
+          <div><a href="http://192.168.56.105:5050" target="_blank" rel="noopener">pgAdmin</a></div>
+        </div>
+      </div>
+
+      <p class="small">If you changed the network subnet or IPs, update the Nginx service mapping in <code>local-dev/docker-compose.yml</code> accordingly.</p>
+    </div>
+  </body>
+  </html>
+

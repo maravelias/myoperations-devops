@@ -11,7 +11,7 @@ Services are orchestrated with Docker Compose and are pre-configured to work tog
   - CPU: 4+ cores
   - RAM: 8 GB (minimum 6 GB)
   - Disk: 20+ GB free (volumes: Postgres, SonarQube, Prometheus, Loki, Grafana)
-- Ports available on host: 3000, 3100, 5050, 5080, 5432, 8025, 9000, 9090, 1025
+- Ports available on host: 80, 3000, 3100, 5050, 5080, 5432, 8025, 9000, 9090, 1025
 
 Security note: Default credentials and static IPs are used for local development only. Do not reuse in any shared or production environment.
 
@@ -24,6 +24,7 @@ Security note: Default credentials and static IPs are used for local development
 - Loki (log aggregation)
 - Grafana OSS (dashboards; pre-provisioned datasources for Prometheus & Loki)
 - MailHog (test SMTP + web UI)
+- Nginx (welcome page on port 80)
 
 Network: A dedicated bridge network `myoperations-network` (172.30.0.0/24) with static container IPs.
 
@@ -114,6 +115,11 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
     Note: the Loki datasource points to the fixed container IP `172.30.0.15:3100`
     to match the static network; update if you change the subnet or Loki IP.
 
+- Nginx
+  - URL: `http://localhost/`
+  - Purpose: Serves a simple welcome page for the local stack
+  - Files: `local-dev/nginx/html/index.html` (mounted read-only)
+
 - MailHog
   - SMTP (from host): `localhost:1025`
   - SMTP (from containers): `mailhog:1025` (service DNS)
@@ -146,6 +152,7 @@ Keycloak and SonarQube may take 1–3 minutes on first start (initialization and
 
 ## Troubleshooting
 - Port conflicts: If a port is already in use, stop the conflicting service or change the published port in `local-dev/docker-compose.yml`.
+- If port 80 is in use (Nginx), change the mapping to `8080:80` and access via `http://localhost:8080/`.
 - Network/subnet conflicts: If `172.30.0.0/24` overlaps with your environment, change the `myoperations-network` subnet and the fixed container IPs consistently across services.
   If you change the subnet or IPs, also update `local-dev/grafana/provisioning/datasources/datasource.yml` (Loki datasource URL) and `local-dev/loki/config.yml` (Loki instance_addr) to match.
 - SonarQube on Linux: You may need to increase `vm.max_map_count` for the embedded search engine:
@@ -178,6 +185,7 @@ Compose project name
 - Loki 2.9.8 (myoperations-loki) – http://localhost:3100
 - Grafana OSS 12.1.1 (myoperations-grafana) – http://localhost:3000
 - MailHog (myoperations-mailhog) – http://localhost:8025, SMTP 1025
+- Nginx 1.26.2-alpine (myoperations-nginx) – http://localhost
 
 ## Remote VM Deployment (Ubuntu)
 If you have an Ubuntu VM with SSH access and want to deploy this stack there, you have two options:
@@ -318,11 +326,15 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.5 | 2025-10-20 | Giorgos Maravelias | Cleaned up formatting; refocused on local dev; added pgvector note      |
 |     1.6 | 2025-10-20 | Giorgos Maravelias | Normalized paths to local-dev; aligned VM/Ansible; updated SonarQube wording; removed Makefile section |
 |     1.7 | 2025-10-22 | Giorgos Maravelias | Consolidated updates: aligned docs with config (Prometheus job `myoperations-app`, extra targets 172.30.0.1/192.168.56.1, Loki/Grafana static IP note); added “Updating Configuration” section with systemd workflow; expanded Cleanup (service removal, network); moved cleanup script to `local-dev/scripts/cleanup.sh` |
+|     1.8 | 2025-10-22 | Giorgos Maravelias | Added Nginx welcome page service (port 80), updated ports/endpoints, folder structure, and troubleshooting notes |
 
 ## Folder Structure
 ```
 local-dev/
 ├── docker-compose.yml              # Orchestrates all local services
+├── nginx/
+│   └── html/
+│       └── index.html              # Static welcome page served by Nginx
 ├── grafana/
 │   └── provisioning/
 │       └── datasources/

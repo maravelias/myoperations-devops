@@ -127,6 +127,23 @@ services:
         ipv4_address: 172.30.0.15
 
 
+  nginx:
+    image: nginx:1.26.2-alpine
+    container_name: myoperations-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ | grep -q 'MyOperations Local Stack' "]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      myoperations-network:
+        ipv4_address: 172.30.0.16
+
+
 
   grafana:
     image: grafana/grafana-oss:12.1.1
