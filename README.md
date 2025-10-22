@@ -116,7 +116,7 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
 
 - MailHog
   - SMTP (from host): `localhost:1025`
-  - SMTP (from containers): `mailhog:1025` (servexitice DNS)
+  - SMTP (from containers): `mailhog:1025` (service DNS)
   - UI: `http://localhost:8025`
 
 ## Prometheus and Your Application
@@ -207,26 +207,117 @@ Notes
 - Firewall: Ensure the VM allows inbound ports you need (e.g., 3000, 5080, 9000, 8025, 9090, 5432) or restrict to your IP.
 - Non-root docker use: After first run, the user added to the docker group must re-login for permissions to take effect.
 
+## Updating Configuration
+When you change configuration under `local-dev/` (Compose file, Prometheus/Loki/Grafana configs, Keycloak realm, etc.), apply updates as follows.
+
+- Validate changes first:
+  ```bash
+  docker compose -f local-dev/docker-compose.yml config
+  ```
+
+- Local (Docker Compose on your machine):
+  - Config/provisioning changes only (e.g., Prometheus, Loki, Grafana): restart affected services to pick up mounted files.
+    ```bash
+    docker compose -f local-dev/docker-compose.yml up -d prometheus
+    docker compose -f local-dev/docker-compose.yml up -d loki
+    docker compose -f local-dev/docker-compose.yml up -d grafana
+    ```
+    Note: Prometheus hot reload is not enabled by default; a container restart is required after editing `prometheus.yml`.
+  - Image tag changes: pull new images, then recreate containers.
+    ```bash
+    docker compose -f local-dev/docker-compose.yml pull
+    docker compose -f local-dev/docker-compose.yml up -d
+    ```
+  - Network/subnet/static IP changes: recreate the network.
+    ```bash
+    docker compose -f local-dev/docker-compose.yml down
+    docker compose -f local-dev/docker-compose.yml up -d
+    ```
+
+- VM (systemd-managed deployment):
+  If you deployed with `local-dev/scripts/deploy-to-vm.sh --with-systemd` or via Ansible, a Linux service `myoperations-local-stack.service` is installed. Update the files on the VM (e.g., under `/opt/myoperations-devops`) and then:
+  - Restart to apply config changes:
+    ```bash
+    sudo systemctl restart myoperations-local-stack.service
+    ```
+  - If image tags changed, pull first:
+    ```bash
+    cd /opt/myoperations-devops && sudo docker compose -f local-dev/docker-compose.yml pull
+    sudo systemctl restart myoperations-local-stack.service
+    ```
+  - If network/subnet changed, do a clean down/up cycle:
+    ```bash
+    sudo systemctl stop myoperations-local-stack.service
+    sudo docker compose -f /opt/myoperations-devops/local-dev/docker-compose.yml down
+    sudo systemctl start myoperations-local-stack.service
+    ```
+  Alternatively, rerun the Ansible playbook to sync files and restart:
+  ```bash
+  ansible-playbook -i local-dev/ansible/inventory.ini local-dev/ansible/site.yml
+  ```
+
+Persistence note: Some services initialize state on first start (e.g., Keycloak realm import, SonarQube data). If those assets change and you need a clean re-import, you may need to reset the corresponding named volumes. See “Recreate from scratch”.
+
 ## Cleanup
-To remove everything created by this stack:
-```bash
-docker compose -f local-dev/docker-compose.yml down
-docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
-```
+Use these procedures to remove the stack. Choose the scope that fits your case.
+
+- Local (Compose only; keep data):
+  ```bash
+  docker compose -f local-dev/docker-compose.yml down
+  ```
+
+- Local (full reset; removes named volumes – destructive):
+  ```bash
+  docker compose -f local-dev/docker-compose.yml down
+  docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
+  # Optional: remove the dedicated network if unused elsewhere
+  docker network rm myoperations-network 2>/dev/null || true
+  ```
+
+- VM (systemd-managed deployment; manual removal):
+  1) Stop and remove the Linux service
+  ```bash
+  sudo systemctl stop myoperations-local-stack.service || true
+  sudo systemctl disable myoperations-local-stack.service || true
+  sudo rm -f /etc/systemd/system/myoperations-local-stack.service
+  sudo systemctl daemon-reload
+  sudo systemctl reset-failed || true
+  ```
+  2) Bring the stack down and remove data (adjust repo path if different)
+  ```bash
+  sudo docker compose -f /opt/myoperations-devops/local-dev/docker-compose.yml down
+  sudo docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
+  sudo docker network rm myoperations-network 2>/dev/null || true
+  ```
+  3) Optionally remove the deployed files
+  ```bash
+  sudo rm -rf /opt/myoperations-devops
+  ```
+
+- Automated (script):
+  - Local machine:
+    ```bash
+    bash local-dev/scripts/cleanup.sh --local --remove-volumes --remove-network
+    ```
+  - VM (service installed):
+    ```bash
+    sudo bash local-dev/scripts/cleanup.sh --vm --repo-dir /opt/myoperations-devops \
+      --remove-volumes --remove-network --purge-repo
+    ```
 
 ---
 If you encounter issues not covered here, please open an issue with your OS, Docker version, and logs from the failing service (`docker compose ... logs -f <service>`).
 
 ## Document Version History
 | Version | Date/Time  | Author             | Changes                                                                 |
-|-------:|------------|--------------------|-------------------------------------------------------------------------|
-| 1.0    | 2025-08-22 | Giorgos Maravelias | Initial README for local Docker-based development stack                 |
-| 1.1    | 2025-08-22 | Giorgos Maravelias | Added Version History, Folder structure, System Overview, Docker commands |
-| 1.2    | 2025-10-20 | Giorgos Maravelias | Verified SonarQube and MailHog in compose; aligned versions; added usage notes |
-| 1.3    | 2025-10-20 | Giorgos Maravelias | Added VM deployment script and Ansible playbook; README VM section      |
-| 1.5    | 2025-10-20 | Giorgos Maravelias | Cleaned up formatting; refocused on local dev; added pgvector note      |
-| 1.6    | 2025-10-20 | Giorgos Maravelias | Normalized paths to local-dev; aligned VM/Ansible; updated SonarQube wording; removed Makefile section |
-| 1.7    | 2025-10-22 | Giorgos Maravelias | Aligned docs with config: Prometheus job renamed to `myoperations-app`, added extra default targets (172.30.0.1, 192.168.56.1), and documented Loki/Grafana static IP mapping |
+|--------:|------------|--------------------|-------------------------------------------------------------------------|
+|     1.0 | 2025-08-22 | Giorgos Maravelias | Initial README for local Docker-based development stack                 |
+|     1.1 | 2025-08-22 | Giorgos Maravelias | Added Version History, Folder structure, System Overview, Docker commands |
+|     1.2 | 2025-10-20 | Giorgos Maravelias | Verified SonarQube and MailHog in compose; aligned versions; added usage notes |
+|     1.3 | 2025-10-20 | Giorgos Maravelias | Added VM deployment script and Ansible playbook; README VM section      |
+|     1.5 | 2025-10-20 | Giorgos Maravelias | Cleaned up formatting; refocused on local dev; added pgvector note      |
+|     1.6 | 2025-10-20 | Giorgos Maravelias | Normalized paths to local-dev; aligned VM/Ansible; updated SonarQube wording; removed Makefile section |
+|     1.7 | 2025-10-22 | Giorgos Maravelias | Consolidated updates: aligned docs with config (Prometheus job `myoperations-app`, extra targets 172.30.0.1/192.168.56.1, Loki/Grafana static IP note); added “Updating Configuration” section with systemd workflow; expanded Cleanup (service removal, network); moved cleanup script to `local-dev/scripts/cleanup.sh` |
 
 ## Folder Structure
 ```
@@ -251,9 +342,12 @@ local-dev/
 │   ├── inventory.ini               # Ansible inventory for remote VM
 │   └── site.yml                    # Ansible playbook to deploy local stack
 ├── scripts/
-│   └── deploy-to-vm.sh             # Bash script to install Docker and deploy stack on a VM
+│   ├── deploy-to-vm.sh             # Install Docker and deploy stack on a VM
+│   └── cleanup.sh                  # Cleanup helper (local or VM modes)
 └── logs/                           # Optional directory for local logs/mounts
 ```
+
+ 
 
 ## System Overview
 This local environment provides an integrated platform to develop and validate the Operations application and its operational concerns:
