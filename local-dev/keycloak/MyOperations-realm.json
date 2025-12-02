@@ -28,7 +28,7 @@
       "lastName": "Admin",
       "email": "admin@local.com",
       "credentials": [ { "type": "password", "value": "admin", "temporary": false } ],
-      "realmRoles": ["SYSADM","system-full-access"]
+      "realmRoles": ["SYSADM"]
     },
     {
       "username": "sr1",
