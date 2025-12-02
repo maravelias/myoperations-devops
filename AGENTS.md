@@ -38,6 +38,7 @@ This file guides agents and contributors working on this repository. It defines 
 - Validate Compose config before pushing: `docker compose -f local-dev/docker-compose.yml config`.
 - Prefer small PRs with a clear scope and checklist.
 - When touching `README.md`, append to the “Document Version History” table with a new row.
+- Follow the Conventional Commits specification for every commit message (`<type>(optional scope): <summary>`). Common types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `build`, `ci`. See https://www.conventionalcommits.org for full syntax/details.
 
 ## Common Commands
 - Start: `docker compose -f local-dev/docker-compose.yml up -d`
@@ -98,4 +99,3 @@ This repo’s local stack was copied from a deprecated project. The following ta
 ## Contact & Issues
 - If something feels ambiguous, prefer adding a short comment to the compose or config file and mirror it in the README if user‑facing.
 - Open an issue describing environment, Docker version, and service logs for reproducible problems.
-

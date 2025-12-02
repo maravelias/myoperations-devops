@@ -77,6 +77,7 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
   - URL: `http://localhost:5080`
   - Admin: `admin` / `admin`
   - Realm: `MyOperations` (auto-imported at first start)
+  - Database: Postgres service `postgres:5432`, DB `keycloak`, username/password `keycloak`
   - Sample users:
     - `admin` / `admin` (role `SYSADM`)
     - `sr1` / `password` (role `SR`)
@@ -167,6 +168,7 @@ Keycloak and SonarQube may take 1–3 minutes on first start (initialization and
   ```
 - File permissions on Linux: If volumes create permission issues, ensure your user can access Docker-managed volumes or adjust directory ownership inside containers where appropriate.
 - Keycloak realm import didn’t apply: Ensure first startup was clean (no existing `/opt/keycloak` data volume). Remove the `myoperations-keycloak` container and recreate. The compose file mounts `./keycloak/MyOperations-realm.json` read-only for import with `start-dev --import-realm`.
+- Resetting Keycloak data: All state lives in the Postgres `keycloak` database. Drop that database/user (or remove the `postgres-data` volume) to force a clean realm import on the next startup.
 - Prometheus can’t scrape app: Confirm the correct target for your OS (`172.17.0.1` vs `host.docker.internal`) and that the app exposes metrics on `/actuator/prometheus`.
 
 ## Data Persistence
@@ -174,6 +176,7 @@ Named Docker volumes keep data across restarts:
 - `postgres-data`, `sonar-db-data`, `sonar-data`, `sonar-extensions`, `prometheus-data`, `grafana-storage`, `loki-data`, `pgadmin-data`
 
 Remove named volumes only if you want to reset state (see “Recreate from scratch”).
+Keycloak persistence is part of the shared `postgres-data` volume, so wiping it also removes the `keycloak` database/user.
 
 Compose project name
 - This stack sets the Compose project name to `myoperations-local-stack` (see `name:` in `local-dev/docker-compose.yml`).
@@ -333,6 +336,7 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.7 | 2025-10-22 | Giorgos Maravelias | Consolidated updates: aligned docs with config (Prometheus job `myoperations-app`, extra targets 172.30.0.1/192.168.56.1, Loki/Grafana static IP note); added “Updating Configuration” section with systemd workflow; expanded Cleanup (service removal, network); moved cleanup script to `local-dev/scripts/cleanup.sh` |
 |     1.8 | 2025-10-22 | Giorgos Maravelias | Added Nginx welcome page service (port 80), updated ports/endpoints, folder structure, and troubleshooting notes |
 |     1.9 | 2025-10-22 | Giorgos Maravelias | Set Loki to single-tenant (`auth_enabled: false`) to fix Grafana 401; updated troubleshooting |
+|     1.10 | 2025-12-02 | Codex Agent        | Wired Keycloak to Postgres for persistent auth data; updated README |
 
 ## Folder Structure
 ```
@@ -353,7 +357,8 @@ local-dev/
 │   └── servers.json                # Preconfigured server connection to Postgres
 ├── postgres/
 │   └── init/
-│       └── 01_pgvector.sql         # Initializes pgvector extension
+│       ├── 01_pgvector.sql         # Initializes pgvector extension
+│       └── 20-keycloak.sql         # Creates Keycloak database/user for Postgres persistence
 ├── prometheus/
 │   └── prometheus.yml              # Prometheus scrape configuration (self + local app)
 ├── ansible/
