@@ -15,6 +15,14 @@ Services are orchestrated with Docker Compose and are pre-configured to work tog
 
 Security note: Default credentials and static IPs are used for local development only. Do not reuse in any shared or production environment.
 
+## Clone the Repository (Linux CLI)
+```bash
+git clone https://github.com/maravelias/myoperations-devops.git
+cd myoperations-devops
+```
+- Requires `git` (install via your distro’s package manager, e.g., `sudo apt install git`).
+- To stay up to date later, run `git pull` inside the repo or use `bash local-dev/scripts/update-stack.sh`.
+
 ## What's Included
 - Postgres 17 with pgvector (DB: operations)
 - pgAdmin 4 (pre-provisioned connection to Postgres)
@@ -337,6 +345,7 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.8 | 2025-10-22 | Giorgos Maravelias | Added Nginx welcome page service (port 80), updated ports/endpoints, folder structure, and troubleshooting notes |
 |     1.9 | 2025-10-22 | Giorgos Maravelias | Set Loki to single-tenant (`auth_enabled: false`) to fix Grafana 401; updated troubleshooting |
 |     1.10 | 2025-12-02 | Codex Agent        | Wired Keycloak to Postgres for persistent auth data; updated README |
+|     1.11 | 2025-12-02 | Codex Agent        | Added stack update script documentation and usage details |
 
 ## Folder Structure
 ```
@@ -366,7 +375,8 @@ local-dev/
 │   └── site.yml                    # Ansible playbook to deploy local stack
 ├── scripts/
 │   ├── deploy-to-vm.sh             # Install Docker and deploy stack on a VM
-│   └── cleanup.sh                  # Cleanup helper (local or VM modes)
+│   ├── cleanup.sh                  # Cleanup helper (local or VM modes)
+│   └── update-stack.sh             # Git pull + restart or full reset of the stack
 └── logs/                           # Optional directory for local logs/mounts
 ```
 
@@ -439,5 +449,22 @@ Frequent docker and docker compose commands for this environment (run from repos
   docker network inspect myoperations-network
   docker system prune -f
   ```
+
+## Stack Update Script
+Automate the "pull latest + restart stack" workflow via:
+```bash
+bash local-dev/scripts/update-stack.sh
+```
+The script:
+- Fetches and pulls the latest commits from `origin` (respecting your current branch unless overridden).
+- Stops the local stack (`docker compose down`).
+- Prompts whether to perform a full Docker reset (remove named volumes + `myoperations-network`) or simply restart.
+- Pulls images and brings the stack back up (`docker compose up -d`).
+
+Flags:
+- `--full-reset` – skip the prompt and wipe volumes/network before recreating (destructive).
+- `--restart-only` – skip the prompt and keep existing data (default).
+- `--branch <name>` / `--remote <name>` – override the Git target.
+- `--yes` – run non-interactively (defaults to restart-only unless explicitly told otherwise).
 
  
