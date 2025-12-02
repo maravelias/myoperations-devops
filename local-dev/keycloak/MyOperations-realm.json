@@ -15,7 +15,8 @@
       { "name": "SUPM", "description": "Support Manager" },
       { "name": "SYSADM", "description": "System Administrator" },
       { "name": "EXEC", "description": "Executive Stakeholder" },
-      { "name": "CLIENT", "description": "Client / Customer" }
+      { "name": "CLIENT", "description": "Client / Customer" },
+      { "name": "system-full-access", "description": "system-full-access" }
     ]
   },
   "users": [
@@ -27,7 +28,7 @@
       "lastName": "Admin",
       "email": "admin@local.com",
       "credentials": [ { "type": "password", "value": "admin", "temporary": false } ],
-      "realmRoles": ["SYSADM"]
+      "realmRoles": ["SYSADM","system-full-access"]
     },
     {
       "username": "sr1",
@@ -65,7 +66,8 @@
       "name": "MyOperations Backend",
       "publicClient": false,
       "protocol": "openid-connect",
-      "serviceAccountsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "standardFlowEnabled": true,
       "redirectUris": ["http://localhost:8080/*", "http://127.0.0.1:8080/*"],
       "secret": "changeme-in-prod"
