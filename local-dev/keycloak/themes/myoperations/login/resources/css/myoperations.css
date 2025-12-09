@@ -53,23 +53,24 @@ body {
 
 .kc-logo-text::before {
   content: "";
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--mo-gold), rgba(216, 171, 65, 0.35)) padding-box,
-    conic-gradient(from 90deg, transparent 0 25%, var(--mo-espresso) 0 50%, transparent 0 75%, var(--mo-espresso) 0 100%) border-box;
-  border: 2px solid rgba(216, 171, 65, 0.4);
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: var(--mo-surface);
+  background-image: url("../img/logo.png");
+  background-size: cover;
+  background-position: center;
+  border: 3px solid rgba(216, 171, 65, 0.5);
   box-shadow: 0 15px 35px rgba(20, 13, 3, 0.25);
-  position: relative;
 }
 
 .kc-logo-text::after {
   content: "";
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--mo-lime);
-  box-shadow: 12px -10px 0 var(--mo-rose);
+  box-shadow: 16px -12px 0 var(--mo-rose);
 }
 
 .card-pf {

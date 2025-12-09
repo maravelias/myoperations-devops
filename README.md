@@ -142,6 +142,7 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
   - `login/theme.properties` pins the parent theme (`keycloak.v2`) and loads `resources/css/myoperations.css`.
   - `login/resources/css/myoperations.css` handles background gradients, buttons, and typography.
   - `login/resources/messages/messages_en.properties` overrides login copy (title/button text).
+  - `login/resources/img/logo.png` is the header logo used in the theme (replace this file to update branding).
 - Realm import (`local-dev/keycloak/MyOperations-realm.json`) sets `loginTheme` to `myoperations`. If your Keycloak database already existed before this change, either update the realm via the Keycloak Admin Console (Realm Settings → Themes → Login) or reset the Postgres `keycloak` schema to re-import.
 - To tweak the visuals:
   1. Edit the files under `local-dev/keycloak/themes/myoperations`.
