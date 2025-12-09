@@ -85,6 +85,7 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
   - URL: `http://localhost:5080`
   - Admin: `admin` / `admin`
   - Realm: `MyOperations` (auto-imported at first start)
+  - Login theme: `myoperations` (files under `local-dev/keycloak/themes/myoperations`; edit CSS/messages for branding)
   - Database: Postgres service `postgres:5432`, DB `keycloak`, username/password `keycloak`
   - Sample users:
     - `admin` / `admin` (role `SYSADM`)
@@ -134,6 +135,21 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
   - SMTP (from host): `localhost:1025`
   - SMTP (from containers): `mailhog:1025` (service DNS)
   - UI: `http://localhost:8025`
+
+## Custom Keycloak Theme
+- Theme name: `myoperations`; mounted into the Keycloak container from `local-dev/keycloak/themes/myoperations`.
+- Contents:
+  - `login/theme.properties` pins the parent theme (`keycloak.v2`) and loads `resources/css/myoperations.css`.
+  - `login/resources/css/myoperations.css` handles background gradients, buttons, and typography.
+  - `login/resources/messages/messages_en.properties` overrides login copy (title/button text).
+- Realm import (`local-dev/keycloak/MyOperations-realm.json`) sets `loginTheme` to `myoperations`. If your Keycloak database already existed before this change, either update the realm via the Keycloak Admin Console (Realm Settings → Themes → Login) or reset the Postgres `keycloak` schema to re-import.
+- To tweak the visuals:
+  1. Edit the files under `local-dev/keycloak/themes/myoperations`.
+  2. Restart Keycloak so it reloads the static resources:
+     ```bash
+     docker compose -f local-dev/docker-compose.yml up -d keycloak
+     ```
+  3. Hard-refresh your browser (or open in a private window) to avoid cached CSS.
 
 ## Prometheus and Your Application
 The Prometheus configuration at `local-dev/prometheus/prometheus.yml` includes a job (`myoperations-app`) to scrape a local application exposing Micrometer metrics at `/actuator/prometheus` on port `8080`.
@@ -346,6 +362,7 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.9 | 2025-10-22 | Giorgos Maravelias | Set Loki to single-tenant (`auth_enabled: false`) to fix Grafana 401; updated troubleshooting |
 |     1.10 | 2025-12-02 | Codex Agent        | Wired Keycloak to Postgres for persistent auth data; updated README |
 |     1.11 | 2025-12-02 | Codex Agent        | Added stack update script documentation and usage details |
+|     1.12 | 2025-12-09 | Codex Agent        | Documented custom Keycloak login theme and how to modify it |
 
 ## Folder Structure
 ```
@@ -359,7 +376,9 @@ local-dev/
 │       └── datasources/
 │           └── datasource.yml      # Pre-provisioned Prometheus and Loki datasources
 ├── keycloak/
-│   └── MyOperations-realm.json     # Realm, roles, users, and clients for MyOperations
+│   ├── MyOperations-realm.json     # Realm, roles, users, and clients for MyOperations
+│   └── themes/
+│       └── myoperations/           # Custom Keycloak login theme (CSS + messages)
 ├── loki/
 │   └── config.yml                  # Loki configuration for single-process mode
 ├── pgadmin/

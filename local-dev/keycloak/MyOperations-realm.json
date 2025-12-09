@@ -4,6 +4,7 @@
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
   "resetPasswordAllowed": true,
+  "loginTheme": "myoperations",
   "roles": {
     "realm": [
       { "name": "SR", "description": "Sales Representative" },

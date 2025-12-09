@@ -57,6 +57,7 @@ services:
       KC_DB_SCHEMA: public
     volumes:
        - ./keycloak/MyOperations-realm.json:/opt/keycloak/data/import/MyOperations-realm.json:ro
+       - ./keycloak/themes/myoperations:/opt/keycloak/themes/myoperations:ro
     ports:
        - "5080:8080"
     healthcheck:
