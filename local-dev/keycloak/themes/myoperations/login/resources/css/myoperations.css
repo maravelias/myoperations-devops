@@ -1,0 +1,158 @@
+:root {
+  --mo-gold: #d8ab41;
+  --mo-espresso: hsl(42, 33%, 13%);
+  --mo-ivory: #f4eee1;
+  --mo-lime: #54de6e;
+  --mo-rose: #ed7f97;
+  --mo-surface: #fff9ee;
+  --mo-outline: rgba(66, 47, 20, 0.18);
+  /* Replace the line below with `url("...")` to use a custom background image */
+  --mo-background-image: radial-gradient(circle at 20% -10%, #fff5dc, rgba(212, 192, 147, 0.65)),
+    linear-gradient(115deg, rgba(255, 255, 255, 0.2), rgba(216, 171, 65, 0.12)),
+    linear-gradient(225deg, rgba(0, 0, 0, 0.06), transparent);
+  --mo-font: "Inter", "Segoe UI", "Helvetica Neue", sans-serif;
+}
+
+body {
+  font-family: var(--mo-font);
+  background-color: var(--mo-ivory);
+  background-image: var(--mo-background-image);
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--mo-espresso);
+}
+
+.login-pf body {
+  background-color: transparent;
+}
+
+#kc-header {
+  background: transparent;
+  border-bottom: none;
+  padding-top: 2.5rem;
+}
+
+#kc-header-wrapper {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--mo-espresso);
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.kc-logo-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+.kc-logo-text::before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--mo-gold), rgba(216, 171, 65, 0.35)) padding-box,
+    conic-gradient(from 90deg, transparent 0 25%, var(--mo-espresso) 0 50%, transparent 0 75%, var(--mo-espresso) 0 100%) border-box;
+  border: 2px solid rgba(216, 171, 65, 0.4);
+  box-shadow: 0 15px 35px rgba(20, 13, 3, 0.25);
+  position: relative;
+}
+
+.kc-logo-text::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--mo-lime);
+  box-shadow: 12px -10px 0 var(--mo-rose);
+}
+
+.card-pf {
+  border: 1px solid var(--mo-outline);
+  border-radius: 1.25rem;
+  box-shadow: 0 30px 60px rgba(18, 12, 4, 0.25);
+  background: var(--mo-surface);
+  color: var(--mo-espresso);
+  padding: 2.5rem 2.75rem;
+}
+
+.card-pf h1 {
+  color: var(--mo-espresso);
+  font-weight: 600;
+}
+
+.pf-c-form__label,
+.pf-c-form-control,
+.form-control {
+  color: var(--mo-espresso);
+  font-weight: 500;
+}
+
+.pf-c-form-control,
+.form-control {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid var(--mo-outline);
+  border-radius: 0.65rem;
+  padding: 0.85rem 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pf-c-form-control:focus,
+.form-control:focus {
+  border-color: var(--mo-gold);
+  box-shadow: 0 0 0 3px rgba(216, 171, 65, 0.25);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--mo-gold), #f0c669);
+  border: 0;
+  border-radius: 999px;
+  color: var(--mo-espresso);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding-block: 0.85rem;
+  box-shadow: 0 15px 30px rgba(216, 171, 65, 0.35);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: linear-gradient(135deg, #f7d171, var(--mo-gold));
+  color: var(--mo-espresso);
+}
+
+.login-pf-page .card-pf .pf-c-button.pf-m-link,
+a {
+  color: var(--mo-rose);
+}
+
+.login-pf-page .card-pf .pf-c-button.pf-m-link:hover,
+a:hover {
+  color: var(--mo-lime);
+}
+
+.pf-c-form__helper-text {
+  color: rgba(84, 62, 27, 0.8);
+}
+
+#kc-info,
+#kc-social-providers .kc-social-item {
+  background: transparent;
+  border: 1px dashed var(--mo-outline);
+  border-radius: 0.9rem;
+  color: rgba(84, 62, 27, 0.75);
+}
+
+#kc-social-providers .kc-social-item {
+  padding: 0.85rem;
+  background-color: rgba(255, 255, 255, 0.85);
+}
+
+#kc-social-providers .kc-social-item:hover {
+  border-color: var(--mo-gold);
+}
