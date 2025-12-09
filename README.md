@@ -140,8 +140,10 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
 - Theme name: `myoperations`; mounted into the Keycloak container from `local-dev/keycloak/themes/myoperations`.
 - Contents:
   - `login/theme.properties` pins the parent theme (`keycloak.v2`) and loads `resources/css/myoperations.css`.
-  - `login/resources/css/myoperations.css` handles background gradients, buttons, and typography.
-  - `login/resources/messages/messages_en.properties` overrides login copy (title/button text).
+  - `login/resources/css/myoperations.css` defines the ivory/gold palette, hero layout, and form controls.
+  - `login/resources/messages/messages_en.properties` overrides login copy (title/button text/hero content).
+  - `login/resources/login.ftl` customizes the login form markup (remember-me, password toggle, register CTA).
+  - `login/resources/template.ftl` controls the two-column layout, hero copy, and locale dropdown wrapper.
   - `login/resources/img/logo.png` is the header logo used in the theme (replace this file to update branding).
 - Realm import (`local-dev/keycloak/MyOperations-realm.json`) sets `loginTheme` to `myoperations`. If your Keycloak database already existed before this change, either update the realm via the Keycloak Admin Console (Realm Settings → Themes → Login) or reset the Postgres `keycloak` schema to re-import.
 - To tweak the visuals:
@@ -364,6 +366,7 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.10 | 2025-12-02 | Codex Agent        | Wired Keycloak to Postgres for persistent auth data; updated README |
 |     1.11 | 2025-12-02 | Codex Agent        | Added stack update script documentation and usage details |
 |     1.12 | 2025-12-09 | Codex Agent        | Documented custom Keycloak login theme and how to modify it |
+|     1.13 | 2025-12-09 | Codex Agent        | Added bespoke Keycloak login/template overrides and logo guidance |
 
 ## Folder Structure
 ```

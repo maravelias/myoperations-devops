@@ -109,6 +109,252 @@ body {
   box-shadow: 0 0 0 3px rgba(216, 171, 65, 0.25);
 }
 
+.mo-login-shell {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 0;
+  min-height: 100vh;
+}
+
+.mo-login-hero {
+  padding: 4rem 5vw;
+  background: linear-gradient(135deg, rgba(216, 171, 65, 0.85), rgba(84, 62, 27, 0.95)),
+    url("../img/globe.svg") no-repeat right 10% top 15%;
+  background-size: auto 280px, contain;
+  color: var(--mo-surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.mo-login-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mo-espresso);
+  background: rgba(244, 238, 225, 0.9);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+}
+
+.mo-login-hero__title {
+  font-size: 2.5rem;
+  margin: 0;
+}
+
+.mo-login-hero__subtitle {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  max-width: 460px;
+  margin: 0;
+}
+
+.mo-login-hero__footnote {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.mo-login-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 5vw;
+}
+
+.mo-login-panel__chrome {
+  width: min(520px, 100%);
+  background: var(--mo-surface);
+  border-radius: 1.5rem;
+  padding: 2.75rem 3rem;
+  box-shadow: 0 35px 65px rgba(15, 10, 3, 0.2);
+  border: 1px solid var(--mo-outline);
+}
+
+.locale-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.locale-container img {
+  width: 20px;
+  height: 20px;
+}
+
+#kc-locale-dropdown > a {
+  color: var(--mo-espresso);
+  font-weight: 600;
+}
+
+#kc-locale-dropdown ul {
+  background: var(--mo-surface);
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
+}
+
+.mo-brand {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.mo-brand img {
+  width: 80px;
+  height: 80px;
+  border-radius: 18px;
+  border: 3px solid rgba(216, 171, 65, 0.4);
+  box-shadow: 0 18px 40px rgba(18, 12, 4, 0.25);
+}
+
+.mo-brand__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--mo-espresso);
+}
+
+.mo-brand__subtitle {
+  color: rgba(84, 62, 27, 0.85);
+  margin: 0.2rem 0 0;
+}
+
+.mo-alert {
+  border-radius: 0.85rem;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+}
+
+.mo-alert--success {
+  background: rgba(84, 222, 110, 0.15);
+  color: #17692c;
+  border: 1px solid rgba(84, 222, 110, 0.4);
+}
+
+.mo-alert--error {
+  background: rgba(237, 127, 151, 0.15);
+  color: #811b2f;
+  border: 1px solid rgba(237, 127, 151, 0.4);
+}
+
+.mo-alert--info,
+.mo-alert--warning {
+  background: rgba(216, 171, 65, 0.15);
+  color: var(--mo-espresso);
+  border: 1px solid rgba(216, 171, 65, 0.4);
+}
+
+.box-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mo-form-intro {
+  margin: 0 0 0.5rem;
+  color: rgba(84, 62, 27, 0.85);
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.field-group label {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.field-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--mo-outline);
+  border-radius: 0.9rem;
+  padding: 0 0.75rem;
+}
+
+.field-control input {
+  border: 0;
+  background: transparent;
+  flex: 1;
+  padding: 0.9rem 0.35rem;
+  font-size: 1rem;
+  color: var(--mo-espresso);
+}
+
+.field-control input:focus {
+  outline: none;
+}
+
+.field-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.field-icon img {
+  width: 20px;
+  height: 20px;
+}
+
+.visibility {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.visibility img {
+  width: 22px;
+  height: 22px;
+}
+
+.form-aux {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.form-link {
+  font-weight: 600;
+  color: var(--mo-rose);
+}
+
+.form-actions {
+  display: flex;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--mo-gold), #f0c669);
   border: 0;
@@ -125,6 +371,21 @@ body {
 .btn-primary:focus {
   background: linear-gradient(135deg, #f7d171, var(--mo-gold));
   color: var(--mo-espresso);
+}
+
+.submit {
+  width: 100%;
+  border: 0;
+  border-radius: 0.9rem;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, var(--mo-gold), #f0c669);
+  color: var(--mo-espresso);
+  cursor: pointer;
+  box-shadow: 0 20px 35px rgba(216, 171, 65, 0.35);
 }
 
 .login-pf-page .card-pf .pf-c-button.pf-m-link,
@@ -156,4 +417,70 @@ a:hover {
 
 #kc-social-providers .kc-social-item:hover {
   border-color: var(--mo-gold);
+}
+
+.social-divider {
+  text-align: center;
+  margin: 1.5rem 0;
+  position: relative;
+  font-weight: 600;
+  color: rgba(84, 62, 27, 0.7);
+}
+
+.social-divider::before,
+.social-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background: var(--mo-outline);
+}
+
+.social-divider::before {
+  left: 0;
+}
+
+.social-divider::after {
+  right: 0;
+}
+
+.mo-register {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  color: rgba(84, 62, 27, 0.85);
+}
+
+.mo-register a {
+  font-weight: 600;
+  color: var(--mo-rose);
+}
+
+.mo-footer {
+  margin-top: 2rem;
+  text-align: center;
+  color: rgba(84, 62, 27, 0.7);
+}
+
+.mo-footer__note {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .mo-login-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .mo-login-hero {
+    padding: 3rem 2.5rem;
+  }
+
+  .mo-login-panel {
+    padding: 2.5rem 1.5rem 3rem;
+  }
+
+  .mo-login-panel__chrome {
+    padding: 2rem;
+  }
 }
