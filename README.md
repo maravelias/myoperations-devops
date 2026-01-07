@@ -24,9 +24,9 @@ cd myoperations-devops
 - To stay up to date later, run `git pull` inside the repo or use `bash local-dev/scripts/update-stack.sh`.
 
 ## What's Included
-- Postgres 17 with pgvector (DB: operations)
+- Postgres 18 with pgvector (DB: operations)
 - pgAdmin 4 (pre-provisioned connection to Postgres)
-- Keycloak 26 (realm import: MyOperations)
+- Keycloak 26.5 (realm import: MyOperations)
 - SonarQube (Community) with dedicated Postgres DB
 - Prometheus (metrics)
 - Loki (log aggregation)
@@ -211,16 +211,16 @@ Compose project name
 - That’s why volume names in cleanup examples start with `myoperations-local-stack_`.
 
 ## Service Inventory (from docker-compose.yml)
-- Postgres 17 (pgvector) (myoperations-postgres) – 172.30.0.10:5432
-- pgAdmin 4 9.8.0 (myoperations-pgadmin) – http://localhost:5050
-- Keycloak 26.3.3 (myoperations-keycloak) – http://localhost:5080
-- Sonar DB (Postgres 17) (myoperations-sonar-db) – internal only
-- SonarQube Community (myoperations-sonarqube) – http://localhost:9000
-- Prometheus v2.54.1 (myoperations-prometheus) – http://localhost:9090
-- Loki 2.9.8 (myoperations-loki) – http://localhost:3100
-- Grafana OSS 12.1.1 (myoperations-grafana) – http://localhost:3000
+- Postgres 18 (pgvector) (myoperations-postgres) – 172.30.0.10:5432
+- pgAdmin 4 9.11.0 (myoperations-pgadmin) – http://localhost:5050
+- Keycloak 26.5.0 (myoperations-keycloak) – http://localhost:5080
+- Sonar DB (Postgres 18.1) (myoperations-sonar-db) – internal only
+- SonarQube Community 26.1.0.118079 (myoperations-sonarqube) – http://localhost:9000
+- Prometheus v3.9.0 (myoperations-prometheus) – http://localhost:9090
+- Loki 3.6.3 (myoperations-loki) – http://localhost:3100
+- Grafana OSS 12.3.1 (myoperations-grafana) – http://localhost:3000
 - MailHog (myoperations-mailhog) – http://localhost:8025, SMTP 1025
-- Nginx 1.26.2-alpine (myoperations-nginx) – http://localhost
+- Nginx 1.29.4-alpine (myoperations-nginx) – http://localhost
 
 ## Remote VM Deployment (Ubuntu)
 If you have an Ubuntu VM with SSH access and want to deploy this stack there, you have two options:
@@ -367,6 +367,7 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.11 | 2025-12-02 | Codex Agent        | Added stack update script documentation and usage details |
 |     1.12 | 2025-12-09 | Codex Agent        | Documented custom Keycloak login theme and how to modify it |
 |     1.13 | 2025-12-09 | Codex Agent        | Added bespoke Keycloak login/template overrides and logo guidance |
+|     1.14 | 2026-01-07 | Codex Agent        | Updated service versions to match compose (Postgres 18, pgAdmin 9.11, Keycloak 26.5.0, SonarQube 26.1, Prometheus 3.9, Loki 3.6, Grafana 12.3, Nginx 1.29) |
 
 ## Folder Structure
 ```
