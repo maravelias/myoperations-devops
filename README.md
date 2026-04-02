@@ -10,8 +10,8 @@ Services are orchestrated with Docker Compose and are pre-configured to work tog
 - Recommended resources:
   - CPU: 4+ cores
   - RAM: 8 GB (minimum 6 GB)
-  - Disk: 20+ GB free (volumes: Postgres, SonarQube, Prometheus, Loki, Grafana)
-- Ports available on host: 80, 3000, 3100, 5050, 5080, 5432, 8025, 9000, 9090, 1025
+  - Disk: 20+ GB free (volumes: Postgres, SonarQube, Prometheus, Loki, Grafana, MinIO)
+  - Ports available on host: 80, 3000, 3100, 5050, 5080, 5432, 8025, 9000, 9090, 1025, 9005, 9006
 
 Security note: Default credentials and static IPs are used for local development only. Do not reuse in any shared or production environment.
 
@@ -31,6 +31,7 @@ cd myoperations-devops
 - Prometheus (metrics)
 - Loki (log aggregation)
 - Grafana OSS (dashboards; pre-provisioned datasources for Prometheus & Loki)
+- MinIO (S3-compatible object storage)
 - MailHog (test SMTP + web UI)
 - Nginx (welcome page on port 80)
 
@@ -62,7 +63,7 @@ docker compose -f local-dev/docker-compose.yml logs -f keycloak
 - Recreate from scratch (CAUTION – removes named volumes):
 ```bash
 docker compose -f local-dev/docker-compose.yml down
-docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
+docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data myoperations-local-stack_minio-data 2>/dev/null || true
 docker compose -f local-dev/docker-compose.yml up -d
 ```
 
@@ -137,6 +138,12 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
   - SMTP (from containers): `mailhog:1025` (service DNS)
   - UI: `http://localhost:8025`
 
+- MinIO
+  - API: `http://localhost:9005`
+  - Console: `http://localhost:9006`
+  - Admin: `admin` / `P@ssw0rdMinio`
+  - Static IP: `172.30.0.21`
+
 ## Custom Keycloak Theme
 - Theme name: `myoperations`; mounted into the Keycloak container from `local-dev/keycloak/themes/myoperations`.
 - Contents:
@@ -201,7 +208,7 @@ Keycloak and SonarQube may take 1–3 minutes on first start (initialization and
 
 ## Data Persistence
 Named Docker volumes keep data across restarts:
-- `postgres-data`, `sonar-db-data`, `sonar-data`, `sonar-extensions`, `prometheus-data`, `grafana-storage`, `loki-data`, `pgadmin-data`
+- `postgres-data`, `sonar-db-data`, `sonar-data`, `sonar-extensions`, `prometheus-data`, `grafana-storage`, `loki-data`, `pgadmin-data`, `minio-data`
 
 Remove named volumes only if you want to reset state (see “Recreate from scratch”).
 Keycloak persistence is part of the shared `postgres-data` volume, so wiping it also removes the `keycloak` database/user.
@@ -223,6 +230,7 @@ Compose project name
 - Grafana OSS 12.3.1 (myoperations-grafana) – http://localhost:3000
 - MailHog (myoperations-mailhog) – http://localhost:8025, SMTP 1025
 - Nginx 1.29.4-alpine (myoperations-nginx) – http://localhost
+- MinIO (myoperations-minio) – http://localhost:9005 (API), http://localhost:9006 (Console)
 
 ## Remote VM Deployment (Ubuntu)
 If you have an Ubuntu VM with SSH access and want to deploy this stack there, you have two options:
@@ -314,7 +322,7 @@ Use these procedures to remove the stack. Choose the scope that fits your case.
 - Local (full reset; removes named volumes – destructive):
   ```bash
   docker compose -f local-dev/docker-compose.yml down
-  docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
+  docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data myoperations-local-stack_minio-data 2>/dev/null || true
   # Optional: remove the dedicated network if unused elsewhere
   docker network rm myoperations-network 2>/dev/null || true
   ```
@@ -331,7 +339,7 @@ Use these procedures to remove the stack. Choose the scope that fits your case.
   2) Bring the stack down and remove data (adjust repo path if different)
   ```bash
   sudo docker compose -f /opt/myoperations-devops/local-dev/docker-compose.yml down
-  sudo docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
+  sudo docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data myoperations-local-stack_minio-data 2>/dev/null || true
   sudo docker network rm myoperations-network 2>/dev/null || true
   ```
   3) Optionally remove the deployed files
@@ -371,6 +379,8 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.13 | 2025-12-09 | Codex Agent        | Added bespoke Keycloak login/template overrides and logo guidance |
 |     1.14 | 2026-01-07 | Codex Agent        | Updated service versions to match compose (Postgres 18, pgAdmin 9.11, Keycloak 26.5.0, SonarQube 26.1, Prometheus 3.9, Loki 3.6, Grafana 12.3, Nginx 1.29) |
 |     1.15 | 2026-04-02 | Codex Agent        | Added SonarQube auto-initialization (`sonar-init`) and project setup script |
+|     1.16 | 2026-04-02 | Codex Agent        | Integrated MinIO for S3-compatible object storage                       |
+|     1.17 | 2026-04-02 | Codex Agent        | Added MinIO Console link to Nginx welcome page                         |
 
 ## Folder Structure
 ```
@@ -437,6 +447,7 @@ This local environment provides an integrated platform to develop and validate t
   - Grafana → Prometheus/Loki for dashboards and log exploration
   - Developers → SonarQube for code quality analysis
   - Application → MailHog for testing email flows
+  - Application → MinIO for object storage (S3)
 
 ## Common Docker Commands
 Frequent docker and docker compose commands for this environment (run from repository root):
@@ -452,7 +463,7 @@ Frequent docker and docker compose commands for this environment (run from repos
 - Recreate from scratch (removes named volumes; destructive):
   ```bash
   docker compose -f local-dev/docker-compose.yml down
-  docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data 2>/dev/null || true
+  docker volume rm myoperations-local-stack_postgres-data myoperations-local-stack_sonar-db-data myoperations-local-stack_sonar-data myoperations-local-stack_sonar-extensions myoperations-local-stack_prometheus-data myoperations-local-stack_grafana-storage myoperations-local-stack_loki-data myoperations-local-stack_pgadmin-data myoperations-local-stack_minio-data 2>/dev/null || true
   docker compose -f local-dev/docker-compose.yml up -d
   ```
 - Status and logs:

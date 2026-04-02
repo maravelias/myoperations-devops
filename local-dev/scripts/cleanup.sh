@@ -36,6 +36,7 @@ VOLUMES=(
   "${PROJECT_NAME}_grafana-storage"
   "${PROJECT_NAME}_loki-data"
   "${PROJECT_NAME}_pgadmin-data"
+  "${PROJECT_NAME}_minio-data"
 )
 
 info() { echo -e "[INFO] $*"; }
