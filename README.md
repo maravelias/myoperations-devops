@@ -27,7 +27,7 @@ cd myoperations-devops
 - Postgres 18 with pgvector (DB: operations)
 - pgAdmin 4 (pre-provisioned connection to Postgres)
 - Keycloak 26.5 (realm import: MyOperations)
-- SonarQube (Community) with dedicated Postgres DB
+- SonarQube (Community) with dedicated Postgres DB (auto-initialization of projects via `sonar-init`)
 - Prometheus (metrics)
 - Loki (log aggregation)
 - Grafana OSS (dashboards; pre-provisioned datasources for Prometheus & Loki)
@@ -99,6 +99,7 @@ Note: `docker compose down -v` does not remove named volumes; remove explicitly 
   - URL: `http://localhost:9000`
   - First login: `admin` / `admin` (you will be asked to change the password)
   - DB: standalone Postgres service (`sonar-db`)
+  - Auto-initialization: The stack includes a `sonar-init` service that automatically creates the "MyOperations" project.
   - Create a token: User menu → My Account → Security → Generate Token
   - Local scan options:
     - Maven/Gradle plugins (preferred for JVM projects)
@@ -216,6 +217,7 @@ Compose project name
 - Keycloak 26.5.0 (myoperations-keycloak) – http://localhost:5080
 - Sonar DB (Postgres 18.1) (myoperations-sonar-db) – internal only
 - SonarQube Community 26.1.0.118079 (myoperations-sonarqube) – http://localhost:9000
+- Sonar Init (myoperations-sonar-init) – (ephemeral) auto-creates projects
 - Prometheus v3.9.0 (myoperations-prometheus) – http://localhost:9090
 - Loki 3.6.3 (myoperations-loki) – http://localhost:3100
 - Grafana OSS 12.3.1 (myoperations-grafana) – http://localhost:3000
@@ -368,6 +370,7 @@ If you encounter issues not covered here, please open an issue with your OS, Doc
 |     1.12 | 2025-12-09 | Codex Agent        | Documented custom Keycloak login theme and how to modify it |
 |     1.13 | 2025-12-09 | Codex Agent        | Added bespoke Keycloak login/template overrides and logo guidance |
 |     1.14 | 2026-01-07 | Codex Agent        | Updated service versions to match compose (Postgres 18, pgAdmin 9.11, Keycloak 26.5.0, SonarQube 26.1, Prometheus 3.9, Loki 3.6, Grafana 12.3, Nginx 1.29) |
+|     1.15 | 2026-04-02 | Codex Agent        | Added SonarQube auto-initialization (`sonar-init`) and project setup script |
 
 ## Folder Structure
 ```
@@ -388,6 +391,8 @@ local-dev/
 │   └── config.yml                  # Loki configuration for single-process mode
 ├── pgadmin/
 │   └── servers.json                # Preconfigured server connection to Postgres
+├── sonarqube/
+│   └── init-projects.sh            # SonarQube project initialization script (runs via sonar-init)
 ├── postgres/
 │   └── init/
 │       ├── 01_pgvector.sql         # Initializes pgvector extension
